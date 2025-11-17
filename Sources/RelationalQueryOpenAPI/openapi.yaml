@@ -1,0 +1,171 @@
+openapi: 3.0.0
+info:
+  title: Query
+  version: 0.0.1
+
+paths:
+  /query:
+    post:
+      operationId: query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RelationalQuery'
+      responses:
+        '200':
+          description: A hello message
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+
+components:
+  schemas:
+    RelationalQuery:
+      type: object
+      properties:
+        table:
+          type: string
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelationalField'
+        condition:
+          $ref: '#/components/schemas/RelationalQueryCondition'
+        order:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelationalQueryResultOrder'
+      required:
+        - table
+    RelationalField:
+      type: object
+      oneOf:
+        - $ref: '#/components/schemas/field'
+        - $ref: '#/components/schemas/renamingField'
+    RelationalQueryCondition:
+      type: object
+      oneOf:
+        - $ref: '#/components/schemas/equalText'
+        - $ref: '#/components/schemas/equalInteger'
+        - $ref: '#/components/schemas/smallerInteger'
+        - $ref: '#/components/schemas/smallerOrEqualInteger'
+        - $ref: '#/components/schemas/greaterInteger'
+        - $ref: '#/components/schemas/greaterOrEqualInteger'
+        - $ref: '#/components/schemas/equalBoolean'
+        - $ref: '#/components/schemas/similarText'
+        - $ref: '#/components/schemas/not'
+        - $ref: '#/components/schemas/and'
+        - $ref: '#/components/schemas/or'
+    RelationalQueryResultOrder:
+      type: object
+      oneOf:
+        - $ref: '#/components/schemas/field'
+        - $ref: '#/components/schemas/fieldWithDirection'
+    RelationalQueryOrderDirection:
+      type: object
+      oneOf:
+        - title: ascending
+        - title: descending
+    field:
+      type: object
+      properties:
+        field_name:
+          type: string
+    renamingField:
+      type: object
+      properties:
+        renamingField_name:
+          type: string
+        renamingField_to:
+          type: string
+    fieldWithDirection:
+      type: object
+      properties:
+        name:
+          type: string
+        direction:
+          $ref: '#/components/schemas/RelationalQueryOrderDirection'
+    equalText:
+      type: object
+      properties:
+        field:
+          type: string
+        value:
+          type: string
+    equalInteger:
+      type: object
+      properties:
+        field:
+          type: string
+        value:
+          type: integer
+    smallerInteger:
+      type: object
+      properties:
+        field:
+          type: string
+        than:
+          type: integer
+    smallerOrEqualInteger:
+      type: object
+      properties:
+        field:
+          type: string
+        than:
+          type: integer
+    greaterInteger:
+      type: object
+      properties:
+        field:
+          type: string
+        than:
+          type: integer
+    greaterOrEqualInteger:
+      type: object
+      properties:
+        field:
+          type: string
+        than:
+          type: integer
+    equalBoolean:
+      type: object
+      properties:
+        field:
+          type: string
+        value:
+          type: boolean
+    similarText:
+      type: object
+      properties:
+        field:
+          type: string
+        template:
+          type: string
+        wildcard:
+          type: string
+    not:
+      type: object
+      properties:
+        conditions:
+          $ref: '#/components/schemas/RelationalQueryCondition'
+    and:
+      type: object
+      properties:
+        conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelationalQueryCondition'
+    or:
+      type: object
+      properties:
+        conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelationalQueryCondition'
