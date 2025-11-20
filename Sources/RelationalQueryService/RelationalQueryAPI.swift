@@ -10,7 +10,7 @@ struct RelationalQueryAPI: APIProtocol {
     
     func query(_ input: RelationalQueryOpenAPI.Operations.query.Input) async throws -> RelationalQueryOpenAPI.Operations.query.Output {
         
-        guard case .json(let query) = input.body else {
+        guard case .json(let queryInput) = input.body else {
             return .ok(.init(body:
                     .json(.init(
                         message: "No valid JSON!"
@@ -18,49 +18,65 @@ struct RelationalQueryAPI: APIProtocol {
             ))
         }
         
-        var firstFieldInfo = "–"
-        var firstOrderInfo = "–"
-        var debug = ""
-        
-        if let firstField = query.fields?.first {
-            
-            // >>>>>>>>>>>>>>>>>>>>>>>>
-            // see how as it should look as JSON:
-            let field1 = Components.Schemas.RelationalField.renamingField(Components.Schemas.renamingField(renaming: "vorher", to: "nachher"))
-            let field2 = Components.Schemas.RelationalField.field(Components.Schemas.field(name: "spalte1"))
-            
-            let test = Components.Schemas.RelationalQuery(
-                table: "myTable",
-                fields: [
-                    field1, field2,
-                ]
-            )
-            
-            debug = String(data: try JSONEncoder().encode(test), encoding: .utf8) ?? "ERROR WHEN ENCODING"
-            // <<<<<<<<<<<<<<<<<<<<<<<<
-            
-            switch firstField {
-            case .renamingField(let renamingField):
-                firstFieldInfo = String(data: try JSONEncoder().encode(renamingField), encoding: .utf8) ?? "?"
-                firstFieldInfo += ": " + "\(renamingField.renaming) -> \(renamingField.to)"
-            case .field(let field):
-                firstFieldInfo = String(data: try JSONEncoder().encode(field), encoding: .utf8) ?? "?"
-                firstFieldInfo += ": " + field.name
+        func makeConditon(from inputCondition: Components.Schemas.RelationalQueryCondition) -> RelationalQueryCondition {
+            switch inputCondition {
+            case .equalText(let equalText):
+                .equalText(field: equalText.equalTextField, value: equalText.value)
+            case .equalInteger(let equalInteger):
+                .equalInteger(field: equalInteger.equalIntegerField, value: equalInteger.value)
+            case .smallerInteger(let smallerInteger):
+                .smallerInteger(field: smallerInteger.smallerIntegerField, than: smallerInteger.than)
+            case .smallerOrEqualInteger(let smallerOrEqualInteger):
+                .smallerOrEqualInteger(field: smallerOrEqualInteger.smallerOrEqualField, than: smallerOrEqualInteger.than)
+            case .greaterInteger(let greaterInteger):
+                .greaterInteger(field: greaterInteger.greaterIntegerField, than: greaterInteger.than)
+            case .greaterOrEqualInteger(let greaterOrEqualInteger):
+                .greaterOrEqualInteger(field: greaterOrEqualInteger.greaterOrEqualIntegerField, than: greaterOrEqualInteger.than)
+            case .equalBoolean(let equalBoolean):
+                .equalBoolean(field: equalBoolean.equalBooleanField, value: equalBoolean.value)
+            case .similarText(let similarText):
+                .similarText(field: similarText.similarTextField, template: similarText.template, wildcard: similarText.wildcard)
+            case .not(let not):
+                .not(condition: makeConditon(from: not.condition))
+            case .and(let and):
+                .and(conditions: and.conditions.map(makeConditon))
+            case .or(let or):
+                .or(conditions: or.conditions.map(makeConditon))
             }
         }
         
-        if let firstDirection = query.order?.first {
-            switch firstDirection {
-            case .field(let field):
-                firstOrderInfo = "ORDER BY \(field.name)"
-            case .fieldWithDirection(let fieldWithDirection):
-                firstOrderInfo = "ORDER BY \(fieldWithDirection.withDirection) \(fieldWithDirection.direction)"
-            }
+        func makeConditon(fromOptional inputCondition: Components.Schemas.RelationalQueryCondition?) -> RelationalQueryCondition? {
+            guard let inputCondition else { return nil }
+            return makeConditon(from: inputCondition)
         }
+        
+        let query = RelationalQuery(
+            table: queryInput.table,
+            fields: queryInput.fields?.map { field in
+                switch field {
+                case .field(let field):
+                    RelationalField.field(name: field.name)
+                case .renamingField(let renamingField):
+                    RelationalField.renamingField(name: renamingField.renaming, to: renamingField.to)
+                }
+            },
+            condition: makeConditon(fromOptional: queryInput.condition),
+            orderBy: queryInput.order?.map { order in
+                switch order {
+                case .field(let field):
+                    .field(name: field.name)
+                case .fieldWithDirection(let fieldWithDirection):
+                        .fieldWithDirection(name: fieldWithDirection.withDirection, direction: fieldWithDirection.direction == .descending ? .descending : .ascending)
+
+                }
+            }
+        )
+        
+        let sql = query.sql
         
         return .ok(.init(body:
             .json(.init(
-                message: "Hello query for table with first field \(firstFieldInfo), first order \(firstOrderInfo) (\(debug))"
+                message: "Hello query: \(sql)"
             ))
         ))
     }

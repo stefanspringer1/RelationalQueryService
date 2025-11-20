@@ -184,10 +184,10 @@ components:
     not:
       type: object
       properties:
-        conditions:
+        condition:
           $ref: '#/components/schemas/RelationalQueryCondition'
       required:
-        - conditions
+        - condition
     and:
       type: object
       properties:
