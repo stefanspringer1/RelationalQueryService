@@ -37,11 +37,11 @@ struct RelationalQueryAPI: APIProtocol {
             case .similarText(let similarText):
                 .similarText(field: similarText.similarTextField, template: similarText.template, wildcard: similarText.wildcard)
             case .not(let not):
-                .not(condition: makeConditon(from: not.condition))
+                    .not(condition: makeConditon(from: not.not))
             case .and(let and):
-                .and(conditions: and.conditions.map(makeConditon))
+                .and(conditions: and.and.map(makeConditon))
             case .or(let or):
-                .or(conditions: or.conditions.map(makeConditon))
+                .or(conditions: or.or.map(makeConditon))
             }
         }
         

@@ -184,25 +184,25 @@ components:
     not:
       type: object
       properties:
-        condition:
+        not:
           $ref: '#/components/schemas/RelationalQueryCondition'
       required:
-        - condition
+        - not
     and:
       type: object
       properties:
-        conditions:
+        and:
           type: array
           items:
             $ref: '#/components/schemas/RelationalQueryCondition'
       required:
-        - conditions
+        - and
     or:
       type: object
       properties:
-        conditions:
+        or:
           type: array
           items:
             $ref: '#/components/schemas/RelationalQueryCondition'
       required:
-        - conditions
+        - or
