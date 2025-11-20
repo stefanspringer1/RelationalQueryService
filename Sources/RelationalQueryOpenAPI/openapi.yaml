@@ -14,19 +14,33 @@ paths:
               $ref: '#/components/schemas/RelationalQuery'
       responses:
         '200':
-          description: A hello message
+          description: The query result
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                required:
-                  - message
+                $ref: '#/components/schemas/Result'
 
 components:
   schemas:
+    Result:
+      type: object
+      oneOf:
+        - $ref: '#/components/schemas/Error'
+        - $ref: '#/components/schemas/Rows'
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    Rows:
+      type: array
+      items:
+        $ref: '#/components/schemas/Row'
+    Row:
+      type: object
+      additionalProperties: true
     RelationalQuery:
       type: object
       properties:
@@ -86,8 +100,8 @@ components:
         to:
           type: string
       required:
-          - renaming
-          - to
+        - renaming
+        - to
     fieldWithDirection:
       type: object
       properties:

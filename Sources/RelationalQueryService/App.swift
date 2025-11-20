@@ -2,14 +2,32 @@ import ArgumentParser
 import Hummingbird
 import OpenAPIHummingbird
 import OpenAPIRuntime
+import PostgresNIO
+
+
 
 @main struct RelationalQueryService: AsyncParsableCommand {
     
-    @Option(name: .shortAndLong)
+    @Option(name: [.long], help: #"The host name."#)
     var hostname: String = "127.0.0.1"
     
-    @Option(name: .shortAndLong)
+    @Option(name: [.long], help: #"The port."#)
     var port: Int = 8080
+    
+    @Option(name: [.long], help: #"The database host."#)
+    var dbHost: String = "localhost"
+    
+    @Option(name: [.long], help: #"The database port."#)
+    var dbPort: Int = 5432
+    
+    @Option(name: [.long], help: #"The database user."#)
+    var dbUser: String
+    
+    @Option(name: [.long], help: #"The database password."#)
+    var dbPassword: String
+    
+    @Option(name: [.long], help: #"The database name."#)
+    var dbDatabase: String
     
     func run() async throws {
         
@@ -20,10 +38,19 @@ import OpenAPIRuntime
         
         try api.registerHandlers(on: router)
         
-        let app = Application(
+        var app = Application(
             router: router,
             configuration: .init(address: .hostname(hostname, port: port))
         )
+        
+        app.addServices()
+        
+        var environment = Environment()
+        environment.set("DB-HOST", value: dbHost)
+        environment.set("DB-PORT", value: String(dbPort))
+        environment.set("DB-USER", value: dbUser)
+        environment.set("DB-PASSWORD", value: dbPassword)
+        environment.set("DB-DATABASE", value: dbDatabase)
         
         try await app.runService()
     }

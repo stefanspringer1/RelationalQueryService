@@ -1,9 +1,22 @@
 import Foundation
 import RelationalQueryOpenAPI
 import RelationalQuery
+import PostgresNIO
+import Hummingbird
+import OpenAPIRuntime
 
-struct Person {
-    var name: String
+struct ConnectionError: Error, CustomStringConvertible {
+    
+    let description: String
+    
+    var localizedDescription: String {
+        return description
+    }
+    
+    init(_ description: String) {
+        self.description = description
+    }
+    
 }
 
 struct RelationalQueryAPI: APIProtocol {
@@ -12,9 +25,7 @@ struct RelationalQueryAPI: APIProtocol {
         
         guard case .json(let queryInput) = input.body else {
             return .ok(.init(body:
-                    .json(.init(
-                        message: "No valid JSON!"
-                    ))
+                .json(._Error(Components.Schemas._Error(error: "No valid JSON!")))
             ))
         }
         
@@ -73,11 +84,79 @@ struct RelationalQueryAPI: APIProtocol {
         )
         
         let sql = query.sql
+        //let sql = "SELECT number, date FROM entries WHERE number = 'DIN 20000-1'"
+        
+        var results = [String]()
+        
+        func connect() async throws -> (PostgresClient,Task<(), Never>) {
+            let environment = Environment()
+            guard
+                let dbHost = environment.get("DB-HOST"),
+                let dbPort = Int(environment.get("DB-PORT") ?? ""),
+                let dbUser = environment.get("DB-USER"),
+                let dbPassword = environment.get("DB-PASSWORD"),
+                let dbDatabase = environment.get("DB-DATABASE") else {
+                    throw ConnectionError("Missing database configuration!")
+                }
+            
+            let postgresClient = PostgresClient(
+                configuration: .init(
+                    host: dbHost,
+                    port: dbPort,
+                    username: dbUser,
+                    password: dbPassword,
+                    database: dbDatabase,
+                    tls: .disable
+                )
+            )
+            let task = Task {
+                await postgresClient.run()
+            }
+            return (postgresClient,task)
+        }
+        
+        let postgreSQLQuery = PostgresQuery(stringLiteral: sql)
+        let rows: PostgresRowSequence
+        do {
+            let (postgresClient,task) = try await connect()
+            rows = try await postgresClient.query(postgreSQLQuery)
+            task.cancel()
+        } catch {
+            return .ok(.init(body:
+                .json(._Error(Components.Schemas._Error(error: String(reflecting: error))))
+            ))
+        }
+        
+        var resultRows = [Components.Schemas.Row]()
+        
+        for row in try await rows.collect() {
+            var cells = [String:Sendable]()
+            for cell in row {
+                results.append(cell.columnName)
+                switch cell.dataType {
+                case .varchar, .text:
+                    cells[cell.columnName] = try cell.decode(String.self)
+                case .bool:
+                    cells[cell.columnName] = try cell.decode(Bool.self)
+                default:
+                    return .ok(.init(body:
+                        .json(._Error(Components.Schemas._Error(error: "Unhandled data type: \(cell.dataType)")))
+                    ))
+                }
+            }
+            let container: OpenAPIObjectContainer
+            do {
+                container = try OpenAPIObjectContainer(unvalidatedValue: cells)
+            } catch {
+                return .ok(.init(body:
+                    .json(._Error(Components.Schemas._Error(error: String(reflecting: error))))
+                ))
+            }
+            resultRows.append(Components.Schemas.Row(additionalProperties: container))
+        }
         
         return .ok(.init(body:
-            .json(.init(
-                message: "Hello query: \(sql)"
-            ))
+                .json(.Rows(resultRows))
         ))
     }
     
