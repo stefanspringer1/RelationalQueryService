@@ -69,92 +69,125 @@ components:
         - $ref: '#/components/schemas/field'
         - $ref: '#/components/schemas/fieldWithDirection'
     RelationalQueryOrderDirection:
-      type: object
-      oneOf:
-        - title: ascending
-        - title: descending
+      type: string
+      enum: [ascending, descending]
     field:
-      type: object
-      properties:
-        field_name:
-          type: string
-    renamingField:
-      type: object
-      properties:
-        renamingField_name:
-          type: string
-        renamingField_to:
-          type: string
-    fieldWithDirection:
       type: object
       properties:
         name:
           type: string
+      required:
+        - name
+    renamingField:
+      type: object
+      properties:
+        renaming:
+          type: string
+        to:
+          type: string
+      required:
+          - renaming
+          - to
+    fieldWithDirection:
+      type: object
+      properties:
+        withDirection:
+          type: string
         direction:
           $ref: '#/components/schemas/RelationalQueryOrderDirection'
+      required:
+        - withDirection
+        - direction
     equalText:
       type: object
       properties:
-        field:
+        equalTextField:
           type: string
         value:
           type: string
+      required:
+        - equalTextField
+        - value
     equalInteger:
       type: object
       properties:
-        field:
+        equalIntegerField:
           type: string
         value:
           type: integer
+      required:
+        - equalIntegerField
+        - value
     smallerInteger:
       type: object
       properties:
-        field:
+        smallerIntegerField:
           type: string
         than:
           type: integer
+      required:
+        - smallerIntegerField
+        - than
     smallerOrEqualInteger:
       type: object
       properties:
-        field:
+        smallerOrEqualField:
           type: string
         than:
           type: integer
+      required:
+        - smallerOrEqualField
+        - than
     greaterInteger:
       type: object
       properties:
-        field:
+        greaterIntegerField:
           type: string
         than:
           type: integer
+      required:
+        - greaterIntegerField
+        - than
     greaterOrEqualInteger:
       type: object
       properties:
-        field:
+        greaterOrEqualIntegerField:
           type: string
         than:
           type: integer
+      required:
+        - greaterOrEqualIntegerField
+        - than
     equalBoolean:
       type: object
       properties:
-        field:
+        equalBooleanField:
           type: string
         value:
           type: boolean
+      required:
+        - equalBooleanField
+        - value
     similarText:
       type: object
       properties:
-        field:
+        similarTextField:
           type: string
         template:
           type: string
         wildcard:
           type: string
+      required:
+        - similarTextField
+        - template
+        - wildcard
     not:
       type: object
       properties:
         conditions:
           $ref: '#/components/schemas/RelationalQueryCondition'
+      required:
+        - conditions
     and:
       type: object
       properties:
@@ -162,6 +195,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RelationalQueryCondition'
+      required:
+        - conditions
     or:
       type: object
       properties:
@@ -169,3 +204,5 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RelationalQueryCondition'
+      required:
+        - conditions

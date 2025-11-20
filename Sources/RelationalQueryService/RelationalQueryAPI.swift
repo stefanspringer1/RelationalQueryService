@@ -10,7 +10,7 @@ struct RelationalQueryAPI: APIProtocol {
     
     func query(_ input: RelationalQueryOpenAPI.Operations.query.Input) async throws -> RelationalQueryOpenAPI.Operations.query.Output {
         
-        guard case .json(let json) = input.body else {
+        guard case .json(let query) = input.body else {
             return .ok(.init(body:
                     .json(.init(
                         message: "No valid JSON!"
@@ -19,14 +19,15 @@ struct RelationalQueryAPI: APIProtocol {
         }
         
         var firstFieldInfo = "–"
+        var firstOrderInfo = "–"
         var debug = ""
         
-        if let firstField = json.fields?.first {
+        if let firstField = query.fields?.first {
             
             // >>>>>>>>>>>>>>>>>>>>>>>>
             // see how as it should look as JSON:
-            let field1 = Components.Schemas.RelationalField.renamingField(Components.Schemas.renamingField(renamingField_name: "vorher", renamingField_to: "nachher"))
-            let field2 = Components.Schemas.RelationalField.field(Components.Schemas.field(field_name: "spalte1"))
+            let field1 = Components.Schemas.RelationalField.renamingField(Components.Schemas.renamingField(renaming: "vorher", to: "nachher"))
+            let field2 = Components.Schemas.RelationalField.field(Components.Schemas.field(name: "spalte1"))
             
             let test = Components.Schemas.RelationalQuery(
                 table: "myTable",
@@ -39,22 +40,27 @@ struct RelationalQueryAPI: APIProtocol {
             // <<<<<<<<<<<<<<<<<<<<<<<<
             
             switch firstField {
-            case .field(let field):
-                firstFieldInfo = String(data: try JSONEncoder().encode(field), encoding: .utf8) ?? "?"
-                if let name = field.field_name {
-                    firstFieldInfo += ": " + name
-                }
             case .renamingField(let renamingField):
                 firstFieldInfo = String(data: try JSONEncoder().encode(renamingField), encoding: .utf8) ?? "?"
-                if let name = renamingField.renamingField_name, let to = renamingField.renamingField_to {
-                    firstFieldInfo += ": " + "\(name) -> \(to)"
-                }
+                firstFieldInfo += ": " + "\(renamingField.renaming) -> \(renamingField.to)"
+            case .field(let field):
+                firstFieldInfo = String(data: try JSONEncoder().encode(field), encoding: .utf8) ?? "?"
+                firstFieldInfo += ": " + field.name
+            }
+        }
+        
+        if let firstDirection = query.order?.first {
+            switch firstDirection {
+            case .field(let field):
+                firstOrderInfo = "ORDER BY \(field.name)"
+            case .fieldWithDirection(let fieldWithDirection):
+                firstOrderInfo = "ORDER BY \(fieldWithDirection.withDirection) \(fieldWithDirection.direction)"
             }
         }
         
         return .ok(.init(body:
             .json(.init(
-                message: "Hello query for table with first field \(firstFieldInfo) (\(debug))"
+                message: "Hello query for table with first field \(firstFieldInfo), first order \(firstOrderInfo) (\(debug))"
             ))
         ))
     }
