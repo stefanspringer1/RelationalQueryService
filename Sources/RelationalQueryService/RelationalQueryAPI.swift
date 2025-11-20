@@ -156,7 +156,7 @@ struct RelationalQueryAPI: APIProtocol {
         }
         
         return .ok(.init(body:
-                .json(.Rows(resultRows))
+            .json(.Rows(Components.Schemas.Rows(rows: resultRows)))
         ))
     }
     

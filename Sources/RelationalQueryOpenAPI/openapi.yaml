@@ -35,6 +35,13 @@ components:
       required:
         - error
     Rows:
+      type: object
+      properties:
+        rows:
+          $ref: '#/components/schemas/RowArray'
+      required:
+        - rows
+    RowArray:
       type: array
       items:
         $ref: '#/components/schemas/Row'
