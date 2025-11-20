@@ -29,6 +29,9 @@ import PostgresNIO
     @Option(name: [.long], help: #"The database name."#)
     var dbDatabase: String
     
+    @Option(name: [.long], help: #"Maximal number of conditions."#)
+    var dbConditions: Int = -1
+    
     func run() async throws {
         
         let router = Router()
@@ -51,6 +54,7 @@ import PostgresNIO
         environment.set("DB-USER", value: dbUser)
         environment.set("DB-PASSWORD", value: dbPassword)
         environment.set("DB-DATABASE", value: dbDatabase)
+        environment.set("DB-CONDITIONS", value: String(dbConditions))
         
         try await app.runService()
     }

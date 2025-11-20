@@ -19,6 +19,19 @@ struct ConnectionError: Error, CustomStringConvertible {
     
 }
 
+struct ComplexQueryError: Error, CustomStringConvertible {
+    
+    let description: String
+    
+    var localizedDescription: String {
+        return description
+    }
+    
+    init(_ description: String) {
+        self.description = description
+    }
+    
+}
 struct RelationalQueryAPI: APIProtocol {
     
     func query(_ input: RelationalQueryOpenAPI.Operations.query.Input) async throws -> RelationalQueryOpenAPI.Operations.query.Output {
@@ -29,59 +42,84 @@ struct RelationalQueryAPI: APIProtocol {
             ))
         }
         
-        func makeConditon(from inputCondition: Components.Schemas.RelationalQueryCondition) -> RelationalQueryCondition {
+        let environment = Environment()
+        let maxConditionCount = Int(environment.get("DB-CONDITIONS") ?? "") ?? -1
+        var conditionCount = 0
+        
+        func augmentConditionCount() throws {
+            conditionCount += 1
+            if maxConditionCount > 0 && conditionCount > maxConditionCount {
+                throw ComplexQueryError("More than \(maxConditionCount) conditions!")
+            }
+        }
+        
+        func makeConditon(from inputCondition: Components.Schemas.RelationalQueryCondition) throws -> RelationalQueryCondition {
             switch inputCondition {
             case .equalText(let equalText):
-                .equalText(field: equalText.equalTextField, value: equalText.value)
+                try augmentConditionCount()
+                return .equalText(field: equalText.equalTextField, value: equalText.value)
             case .equalInteger(let equalInteger):
-                .equalInteger(field: equalInteger.equalIntegerField, value: equalInteger.value)
+                try augmentConditionCount()
+                return .equalInteger(field: equalInteger.equalIntegerField, value: equalInteger.value)
             case .smallerInteger(let smallerInteger):
-                .smallerInteger(field: smallerInteger.smallerIntegerField, than: smallerInteger.than)
+                try augmentConditionCount()
+                return .smallerInteger(field: smallerInteger.smallerIntegerField, than: smallerInteger.than)
             case .smallerOrEqualInteger(let smallerOrEqualInteger):
-                .smallerOrEqualInteger(field: smallerOrEqualInteger.smallerOrEqualField, than: smallerOrEqualInteger.than)
+                try augmentConditionCount()
+                return .smallerOrEqualInteger(field: smallerOrEqualInteger.smallerOrEqualField, than: smallerOrEqualInteger.than)
             case .greaterInteger(let greaterInteger):
-                .greaterInteger(field: greaterInteger.greaterIntegerField, than: greaterInteger.than)
+                try augmentConditionCount()
+                return .greaterInteger(field: greaterInteger.greaterIntegerField, than: greaterInteger.than)
             case .greaterOrEqualInteger(let greaterOrEqualInteger):
-                .greaterOrEqualInteger(field: greaterOrEqualInteger.greaterOrEqualIntegerField, than: greaterOrEqualInteger.than)
+                try augmentConditionCount()
+                return .greaterOrEqualInteger(field: greaterOrEqualInteger.greaterOrEqualIntegerField, than: greaterOrEqualInteger.than)
             case .equalBoolean(let equalBoolean):
-                .equalBoolean(field: equalBoolean.equalBooleanField, value: equalBoolean.value)
+                return .equalBoolean(field: equalBoolean.equalBooleanField, value: equalBoolean.value)
             case .similarText(let similarText):
-                .similarText(field: similarText.similarTextField, template: similarText.template, wildcard: similarText.wildcard)
+                try augmentConditionCount()
+                return .similarText(field: similarText.similarTextField, template: similarText.template, wildcard: similarText.wildcard)
             case .not(let not):
-                    .not(condition: makeConditon(from: not.not))
+                return .not(condition: try makeConditon(from: not.not))
             case .and(let and):
-                .and(conditions: and.and.map(makeConditon))
+                return .and(conditions: try and.and.map(makeConditon))
             case .or(let or):
-                .or(conditions: or.or.map(makeConditon))
+                return .or(conditions: try or.or.map(makeConditon))
             }
         }
         
-        func makeConditon(fromOptional inputCondition: Components.Schemas.RelationalQueryCondition?) -> RelationalQueryCondition? {
+        func makeConditon(fromOptional inputCondition: Components.Schemas.RelationalQueryCondition?) throws -> RelationalQueryCondition? {
             guard let inputCondition else { return nil }
-            return makeConditon(from: inputCondition)
+            return try makeConditon(from: inputCondition)
         }
         
-        let query = RelationalQuery(
-            table: queryInput.table,
-            fields: queryInput.fields?.map { field in
-                switch field {
-                case .field(let field):
-                    RelationalField.field(name: field.name)
-                case .renamingField(let renamingField):
-                    RelationalField.renamingField(name: renamingField.renaming, to: renamingField.to)
+        let query: RelationalQuery
+        do {
+            query = RelationalQuery(
+                table: queryInput.table,
+                fields: queryInput.fields?.map { field in
+                    switch field {
+                    case .field(let field):
+                        RelationalField.field(name: field.name)
+                    case .renamingField(let renamingField):
+                        RelationalField.renamingField(name: renamingField.renaming, to: renamingField.to)
+                    }
+                },
+                condition: try makeConditon(fromOptional: queryInput.condition),
+                orderBy: queryInput.order?.map { order in
+                    switch order {
+                    case .field(let field):
+                            .field(name: field.name)
+                    case .fieldWithDirection(let fieldWithDirection):
+                            .fieldWithDirection(name: fieldWithDirection.withDirection, direction: fieldWithDirection.direction == .descending ? .descending : .ascending)
+                        
+                    }
                 }
-            },
-            condition: makeConditon(fromOptional: queryInput.condition),
-            orderBy: queryInput.order?.map { order in
-                switch order {
-                case .field(let field):
-                    .field(name: field.name)
-                case .fieldWithDirection(let fieldWithDirection):
-                        .fieldWithDirection(name: fieldWithDirection.withDirection, direction: fieldWithDirection.direction == .descending ? .descending : .ascending)
-
-                }
-            }
-        )
+            )
+        } catch {
+            return .ok(.init(body:
+                .json(._Error(Components.Schemas._Error(error: "Error while constructing query object: \(String(describing: error))")))
+            ))
+        }
         
         let sql = query.sql
         //let sql = "SELECT number, date FROM entries WHERE number = 'DIN 20000-1'"
@@ -89,7 +127,6 @@ struct RelationalQueryAPI: APIProtocol {
         var results = [String]()
         
         func connect() async throws -> (PostgresClient,Task<(), Never>) {
-            let environment = Environment()
             guard
                 let dbHost = environment.get("DB-HOST"),
                 let dbPort = Int(environment.get("DB-PORT") ?? ""),
