@@ -91,14 +91,14 @@ components:
     RelationalQueryCondition:
       type: object
       oneOf:
-        - $ref: '#/components/schemas/equalText'
-        - $ref: '#/components/schemas/equalInteger'
-        - $ref: '#/components/schemas/smallerInteger'
-        - $ref: '#/components/schemas/smallerOrEqualInteger'
-        - $ref: '#/components/schemas/greaterInteger'
-        - $ref: '#/components/schemas/greaterOrEqualInteger'
-        - $ref: '#/components/schemas/equalBoolean'
-        - $ref: '#/components/schemas/similarText'
+        - $ref: '#/components/schemas/EqualText'
+        - $ref: '#/components/schemas/EqualInteger'
+        - $ref: '#/components/schemas/SmallerInteger'
+        - $ref: '#/components/schemas/SmallerOrEqualInteger'
+        - $ref: '#/components/schemas/GreaterInteger'
+        - $ref: '#/components/schemas/GreaterOrEqualInteger'
+        - $ref: '#/components/schemas/EqualBoolean'
+        - $ref: '#/components/schemas/SimilarText'
         - $ref: '#/components/schemas/not'
         - $ref: '#/components/schemas/and'
         - $ref: '#/components/schemas/or'
@@ -137,87 +137,143 @@ components:
       required:
         - withDirection
         - direction
+    EqualText:
+      type: object
+      properties:
+        equalText:
+          $ref: '#/components/schemas/equalText'
+      required:
+        - equalText
     equalText:
       type: object
       properties:
-        equalTextField:
+        field:
           type: string
         value:
           type: string
       required:
-        - equalTextField
+        - field
         - value
+    EqualInteger:
+      type: object
+      properties:
+        equalInteger:
+          $ref: '#/components/schemas/equalInteger'
+      required:
+        - equalInteger
     equalInteger:
       type: object
       properties:
-        equalIntegerField:
+        field:
           type: string
         value:
           type: integer
       required:
-        - equalIntegerField
+        - field
         - value
+    SmallerInteger:
+      type: object
+      properties:
+        smallerInteger:
+          $ref: '#/components/schemas/smallerInteger'
+      required:
+        - smallerInteger
     smallerInteger:
       type: object
       properties:
-        smallerIntegerField:
+        field:
           type: string
         than:
           type: integer
       required:
-        - smallerIntegerField
+        - field
         - than
+    SmallerOrEqualInteger:
+      type: object
+      properties:
+        smallerOrEqualInteger:
+          $ref: '#/components/schemas/smallerOrEqualInteger'
+      required:
+        - smallerOrEqualInteger
     smallerOrEqualInteger:
       type: object
       properties:
-        smallerOrEqualField:
+        field:
           type: string
         than:
           type: integer
       required:
-        - smallerOrEqualField
+        - field
         - than
+    GreaterInteger:
+      type: object
+      properties:
+        greaterInteger:
+          $ref: '#/components/schemas/greaterInteger'
+      required:
+        - greaterInteger
     greaterInteger:
       type: object
       properties:
-        greaterIntegerField:
+        field:
           type: string
         than:
           type: integer
       required:
-        - greaterIntegerField
+        - field
         - than
+    GreaterOrEqualInteger:
+      type: object
+      properties:
+        greaterOrEqualInteger:
+          $ref: '#/components/schemas/greaterOrEqualInteger'
+      required:
+        - greaterOrEqualInteger
     greaterOrEqualInteger:
       type: object
       properties:
-        greaterOrEqualIntegerField:
+        field:
           type: string
         than:
           type: integer
       required:
-        - greaterOrEqualIntegerField
+        - field
         - than
+    EqualBoolean:
+      type: object
+      properties:
+        equalBoolean:
+          $ref: '#/components/schemas/equalBoolean'
+      required:
+        - equalBoolean
     equalBoolean:
       type: object
       properties:
-        equalBooleanField:
+        field:
           type: string
         value:
           type: boolean
       required:
-        - equalBooleanField
+        - field
         - value
+    SimilarText:
+      type: object
+      properties:
+        similarText:
+          $ref: '#/components/schemas/similarText'
+      required:
+        - similarText
     similarText:
       type: object
       properties:
-        similarTextField:
+        field:
           type: string
         template:
           type: string
         wildcard:
           type: string
       required:
-        - similarTextField
+        - field
         - template
         - wildcard
     not:

@@ -16,12 +16,28 @@ import RelationalQueryOpenAPI
                 ],
                 condition: Components.Schemas.RelationalQueryCondition.or(.init(
                     or: Components.Schemas.Conditions(conditions: [
-                        Components.Schemas.RelationalQueryCondition.equalText(.init(equalTextField: "column_1", value: "some value")),
+                        Components.Schemas.RelationalQueryCondition.EqualText(.init(equalText:
+                            Components.Schemas.equalText(
+                                field: "column_1",
+                                value: "some value"
+                            )
+                        )),
                         Components.Schemas.RelationalQueryCondition.and(.init(
                                 and: Components.Schemas.Conditions(conditions: [
-                                    Components.Schemas.RelationalQueryCondition.equalText(.init(equalTextField: "column_1", value: "some other value")),
+                                    Components.Schemas.RelationalQueryCondition.EqualText(.init(equalText:
+                                        Components.Schemas.equalText(
+                                            field: "column_1",
+                                            value: "some other value"
+                                        )
+                                    )),
                                     Components.Schemas.RelationalQueryCondition.not(.init(not:
-                                        Components.Schemas.RelationalQueryCondition.similarText(.init(similarTextField: "column_2", template: "blabla %", wildcard: "%"))
+                                        Components.Schemas.RelationalQueryCondition.SimilarText(.init(similarText:
+                                            Components.Schemas.similarText(
+                                                field: "column_2",
+                                                template: "blabla %",
+                                                wildcard: "%"
+                                            )
+                                        ))
                                     ))
                                 ])
                         ))

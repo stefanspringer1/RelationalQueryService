@@ -77,29 +77,54 @@ struct RelationalQueryAPI: APIProtocol {
         
         func makeConditon(from inputCondition: Components.Schemas.RelationalQueryCondition) throws -> RelationalQueryCondition {
             switch inputCondition {
-            case .equalText(let equalText):
+            case .EqualText(let content):
                 try augmentConditionCount()
-                return .equalText(field: equalText.equalTextField, value: equalText.value)
-            case .equalInteger(let equalInteger):
+                return .equalText(
+                    field: content.equalText.field,
+                    value: content.equalText.value
+                )
+            case .EqualInteger(let content):
                 try augmentConditionCount()
-                return .equalInteger(field: equalInteger.equalIntegerField, value: equalInteger.value)
-            case .smallerInteger(let smallerInteger):
+                return .equalInteger(
+                    field: content.equalInteger.field,
+                    value: content.equalInteger.value
+                )
+            case .SmallerInteger(let content):
                 try augmentConditionCount()
-                return .smallerInteger(field: smallerInteger.smallerIntegerField, than: smallerInteger.than)
-            case .smallerOrEqualInteger(let smallerOrEqualInteger):
+                return .smallerInteger(
+                    field: content.smallerInteger.field,
+                    than: content.smallerInteger.than
+                )
+            case .SmallerOrEqualInteger(let content):
                 try augmentConditionCount()
-                return .smallerOrEqualInteger(field: smallerOrEqualInteger.smallerOrEqualField, than: smallerOrEqualInteger.than)
-            case .greaterInteger(let greaterInteger):
+                return .smallerOrEqualInteger(
+                    field: content.smallerOrEqualInteger.field,
+                    than: content.smallerOrEqualInteger.than
+                )
+            case .GreaterInteger(let content):
                 try augmentConditionCount()
-                return .greaterInteger(field: greaterInteger.greaterIntegerField, than: greaterInteger.than)
-            case .greaterOrEqualInteger(let greaterOrEqualInteger):
+                return .greaterInteger(
+                    field: content.greaterInteger.field,
+                    than: content.greaterInteger.than
+                )
+            case .GreaterOrEqualInteger(let content):
                 try augmentConditionCount()
-                return .greaterOrEqualInteger(field: greaterOrEqualInteger.greaterOrEqualIntegerField, than: greaterOrEqualInteger.than)
-            case .equalBoolean(let equalBoolean):
-                return .equalBoolean(field: equalBoolean.equalBooleanField, value: equalBoolean.value)
-            case .similarText(let similarText):
+                return .greaterOrEqualInteger(
+                    field: content.greaterOrEqualInteger.field,
+                    than: content.greaterOrEqualInteger.than
+                )
+            case .EqualBoolean(let content):
+                return .equalBoolean(
+                    field: content.equalBoolean.field,
+                    value: content.equalBoolean.value
+                )
+            case .SimilarText(let content):
                 try augmentConditionCount()
-                return .similarText(field: similarText.similarTextField, template: similarText.template, wildcard: similarText.wildcard)
+                return .similarText(
+                    field: content.similarText.field,
+                    template: content.similarText.template,
+                    wildcard: content.similarText.wildcard
+                )
             case .not(let not):
                 return .not(condition: try makeConditon(from: not.not))
             case .and(let and):
