@@ -2,20 +2,18 @@
 
 Connect the [RelationalQuery](https://github.com/stefanspringer1/RelationalQuery) format to an SQL database via an OpenAPI defintion.
 
----
+The application needs to be started with an API key, optionally the allowed table names and a maximal number of conditions in a query can be specified.
 
-**NOTE:**
+Get the list of arguments using the `--help` argument.
 
-This package is in development.
-
----
-
-Die OpanAPI specification is `Sources/RelationalQueryOpenAPI/openapi.yaml`.
+The OpenAPI specification is `Sources/RelationalQueryOpenAPI/openapi.yaml`.
 
 Example input (cf. `reverseInputTest` in the tests)):
 
 ```json
 {
+    "apiKey": "sieben",
+    "table": "entries",
     "fields": [
         {
             "name": "column_1"
