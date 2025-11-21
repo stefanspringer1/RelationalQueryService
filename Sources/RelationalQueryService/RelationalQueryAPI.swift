@@ -144,7 +144,6 @@ struct RelationalQueryAPI: APIProtocol {
         }
         
         let sql = query.sql
-        //let sql = "SELECT number, date FROM entries WHERE number = 'DIN 20000-1'"
         
         var results = [String]()
         
