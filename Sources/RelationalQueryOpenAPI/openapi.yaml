@@ -99,7 +99,7 @@ components:
         - $ref: '#/components/schemas/GreaterOrEqualInteger'
         - $ref: '#/components/schemas/EqualBoolean'
         - $ref: '#/components/schemas/SimilarText'
-        - $ref: '#/components/schemas/not'
+        - $ref: '#/components/schemas/Not'
         - $ref: '#/components/schemas/and'
         - $ref: '#/components/schemas/or'
     RelationalQueryResultOrder:
@@ -297,13 +297,20 @@ components:
         - field
         - template
         - wildcard
-    not:
+    Not:
       type: object
       properties:
         not:
-          $ref: '#/components/schemas/RelationalQueryCondition'
+          $ref: '#/components/schemas/not'
       required:
         - not
+    not:
+      type: object
+      properties:
+        condition:
+          $ref: '#/components/schemas/RelationalQueryCondition'
+      required:
+        - condition
     and:
       type: object
       properties:

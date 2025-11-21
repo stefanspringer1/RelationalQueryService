@@ -19,19 +19,6 @@ struct ConnectionError: Error, CustomStringConvertible {
     
 }
 
-struct ComplexQueryError: Error, CustomStringConvertible {
-    
-    let description: String
-    
-    var localizedDescription: String {
-        return description
-    }
-    
-    init(_ description: String) {
-        self.description = description
-    }
-    
-}
 struct RelationalQueryAPI: APIProtocol {
     
     func query(_ input: RelationalQueryOpenAPI.Operations.query.Input) async throws -> RelationalQueryOpenAPI.Operations.query.Output {
@@ -65,108 +52,11 @@ struct RelationalQueryAPI: APIProtocol {
             }
         }
         
-        let maxConditionCount = Int(environment.get("DB-CONDITIONS") ?? "") ?? -1
-        var conditionCount = 0
-        
-        func augmentConditionCount() throws {
-            conditionCount += 1
-            if maxConditionCount > 0 && conditionCount > maxConditionCount {
-                throw ComplexQueryError("More than \(maxConditionCount) conditions!")
-            }
-        }
-        
-        func makeConditon(from inputCondition: Components.Schemas.RelationalQueryCondition) throws -> RelationalQueryCondition {
-            switch inputCondition {
-            case .EqualText(let content):
-                try augmentConditionCount()
-                return .equalText(
-                    field: content.equalText.field,
-                    value: content.equalText.value
-                )
-            case .EqualInteger(let content):
-                try augmentConditionCount()
-                return .equalInteger(
-                    field: content.equalInteger.field,
-                    value: content.equalInteger.value
-                )
-            case .SmallerInteger(let content):
-                try augmentConditionCount()
-                return .smallerInteger(
-                    field: content.smallerInteger.field,
-                    than: content.smallerInteger.than
-                )
-            case .SmallerOrEqualInteger(let content):
-                try augmentConditionCount()
-                return .smallerOrEqualInteger(
-                    field: content.smallerOrEqualInteger.field,
-                    than: content.smallerOrEqualInteger.than
-                )
-            case .GreaterInteger(let content):
-                try augmentConditionCount()
-                return .greaterInteger(
-                    field: content.greaterInteger.field,
-                    than: content.greaterInteger.than
-                )
-            case .GreaterOrEqualInteger(let content):
-                try augmentConditionCount()
-                return .greaterOrEqualInteger(
-                    field: content.greaterOrEqualInteger.field,
-                    than: content.greaterOrEqualInteger.than
-                )
-            case .EqualBoolean(let content):
-                return .equalBoolean(
-                    field: content.equalBoolean.field,
-                    value: content.equalBoolean.value
-                )
-            case .SimilarText(let content):
-                try augmentConditionCount()
-                return .similarText(
-                    field: content.similarText.field,
-                    template: content.similarText.template,
-                    wildcard: content.similarText.wildcard
-                )
-            case .not(let not):
-                return .not(condition: try makeConditon(from: not.not))
-            case .and(let and):
-                return .and(conditions: try and.and.conditions.map(makeConditon))
-            case .or(let or):
-                return .or(conditions: try or.or.conditions.map(makeConditon))
-            }
-        }
-        
-        func makeConditon(fromOptional inputCondition: Components.Schemas.RelationalQueryCondition?) throws -> RelationalQueryCondition? {
-            guard let inputCondition else { return nil }
-            return try makeConditon(from: inputCondition)
-        }
+        let maxConditionCount = Int(environment.get("DB-CONDITIONS") ?? "")
         
         let query: RelationalQuery
         do {
-            query = RelationalQuery(
-                table: queryInput.query.table,
-                fields: queryInput.query.fields?.map { field in
-                    switch field {
-                    case .Field(let content):
-                        RelationalField.field(name: content.field.name)
-                    case .RenamingField(let content):
-                        RelationalField.renamingField(name: content.renamingField.name, to: content.renamingField.to)
-                    }
-                },
-                condition: try makeConditon(fromOptional: queryInput.query.condition),
-                orderBy: queryInput.query.order?.map { order in
-                    switch order {
-                    case .Field(let content):
-                            .field(
-                                name: content.field.name
-                            )
-                    case .FieldWithDirection(let content):
-                            .fieldWithDirection(
-                                name: content.fieldWithDirection.name,
-                                direction: content.fieldWithDirection.direction == .descending ? .descending : .ascending
-                            )
-                        
-                    }
-                }
-            )
+            query = try makeQuery(fromInputQuery: queryInput.query, maxConditions: maxConditionCount)
         } catch {
             return .ok(.init(body:
                 .json(._Error(Components.Schemas._Error(error: "Error while constructing query object: \(String(describing: error))")))

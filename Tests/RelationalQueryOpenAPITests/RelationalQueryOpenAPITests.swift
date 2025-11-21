@@ -34,14 +34,16 @@ import RelationalQueryOpenAPI
                                             value: "some other value"
                                         )
                                     )),
-                                    Components.Schemas.RelationalQueryCondition.not(.init(not:
-                                        Components.Schemas.RelationalQueryCondition.SimilarText(.init(similarText:
-                                            Components.Schemas.similarText(
-                                                field: "column_2",
-                                                template: "blabla %",
-                                                wildcard: "%"
-                                            )
-                                        ))
+                                    Components.Schemas.RelationalQueryCondition.Not(.init(not:
+                                        Components.Schemas.not(condition:
+                                            Components.Schemas.RelationalQueryCondition.SimilarText(.init(similarText:
+                                                Components.Schemas.similarText(
+                                                    field: "column_2",
+                                                    template: "blabla %",
+                                                    wildcard: "%"
+                                                )
+                                            ))
+                                        )
                                     ))
                                 ])
                         ))
@@ -64,54 +66,84 @@ import RelationalQueryOpenAPI
            let jsonData = try? JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted, .sortedKeys]) {
             #expect(String(data: jsonData, encoding: .utf8) == """
                 {
-                  "condition" : {
-                    "or" : [
-                      {
-                        "equalTextField" : "column_1",
-                        "value" : "some value"
-                      },
-                      {
-                        "and" : [
+                  "parameters" : {
+                    "apiKey" : "sieben"
+                  },
+                  "query" : {
+                    "condition" : {
+                      "or" : {
+                        "conditions" : [
                           {
-                            "equalTextField" : "column_1",
-                            "value" : "some other value"
+                            "equalText" : {
+                              "field" : "column_1",
+                              "value" : "some value"
+                            }
                           },
                           {
-                            "not" : {
-                              "similarTextField" : "column_2",
-                              "template" : "blabla %",
-                              "wildcard" : "%"
+                            "and" : {
+                              "conditions" : [
+                                {
+                                  "equalText" : {
+                                    "field" : "column_1",
+                                    "value" : "some other value"
+                                  }
+                                },
+                                {
+                                  "not" : {
+                                    "condition" : {
+                                      "similarText" : {
+                                        "field" : "column_2",
+                                        "template" : "blabla %",
+                                        "wildcard" : "%"
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
                             }
                           }
                         ]
                       }
-                    ]
-                  },
-                  "fields" : [
-                    {
-                      "name" : "column_1"
                     },
-                    {
-                      "renaming" : "column_2",
-                      "to" : "value"
-                    }
-                  ],
-                  "order" : [
-                    {
-                      "name" : "column_1"
-                    },
-                    {
-                      "direction" : "descending",
-                      "withDirection" : "column_2"
-                    }
-                  ],
-                  "table" : "my_table"
+                    "fields" : [
+                      {
+                        "field" : {
+                          "name" : "column_1"
+                        }
+                      },
+                      {
+                        "renamingField" : {
+                          "name" : "column_2",
+                          "to" : "value"
+                        }
+                      }
+                    ],
+                    "order" : [
+                      {
+                        "field" : {
+                          "name" : "column_1"
+                        }
+                      },
+                      {
+                        "fieldWithDirection" : {
+                          "direction" : "descending",
+                          "name" : "column_2"
+                        }
+                      }
+                    ],
+                    "table" : "my_table"
+                  }
                 }
                 """)
         } else {
             #expect("error" == "invalid JSON")
         }
         
+        let query = try makeQuery(fromInputQuery: queryExample.query)
+        
+        #expect(query.sql == """
+            SELECT column_1,column_2 AS value FROM my_table WHERE (column_1='some value' OR (column_1='some other value' AND NOT column_2 LIKE 'blabla %')) ORDER BY column_1,column_2 DESC
+            """)
     }
     
 }

@@ -12,55 +12,86 @@ Example input (cf. `reverseInputTest` in the tests)):
 
 ```json
 {
-    "apiKey": "sieben",
-    "table": "entries",
-    "fields": [
-        {
-            "name": "column_1"
-        },
-        {
-            "to": "value",
-            "renaming": "column_2"
-        }
-    ],
-    "order": [
-        {
-            "name": "column_1"
-        },
-        {
-            "withDirection": "column_2",
-            "direction": "descending"
-        }
-    ],
-    "table": "my_table",
-    "condition": {
-        "or": [
-            {
-                "equalTextField": "column_1",
-                "value": "some value"
-            },
-            {
-                "and": [
-                    {
-                        "equalTextField": "column_1",
-                        "value": "some other value"
-                    },
-                    {
-                        "not": {
-                            "similarTextField": "column_2",
-                            "template": "blabla %",
-                            "wildcard": "%"
-                        }
-                    }
-                ]
+  "parameters" : {
+    "apiKey" : "sieben"
+  },
+  "query" : {
+    "condition" : {
+      "or" : {
+        "conditions" : [
+          {
+            "equalText" : {
+              "field" : "column_1",
+              "value" : "some value"
             }
+          },
+          {
+            "and" : {
+              "conditions" : [
+                {
+                  "equalText" : {
+                    "field" : "column_1",
+                    "value" : "some other value"
+                  }
+                },
+                {
+                  "not" : {
+                    "condition" : {
+                      "similarText" : {
+                        "field" : "column_2",
+                        "template" : "blabla %",
+                        "wildcard" : "%"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
         ]
-    }
+      }
+    },
+    "fields" : [
+      {
+        "field" : {
+          "name" : "column_1"
+        }
+      },
+      {
+        "renamingField" : {
+          "name" : "column_2",
+          "to" : "value"
+        }
+      }
+    ],
+    "order" : [
+      {
+        "field" : {
+          "name" : "column_1"
+        }
+      },
+      {
+        "fieldWithDirection" : {
+          "direction" : "descending",
+          "name" : "column_2"
+        }
+      }
+    ],
+    "table" : "my_table"
+  }
 }
 ```
 
-This results in the following SQL code used to query the database:
+This results in the following SQL code used to query the database (linebreaks and indentation added):
 
 ```sql
-SELECT column_1,column_2 AS value FROM my_table WHERE (column_1='some value' OR (column_1='some other value' AND NOT column_2 LIKE 'blabla %')) ORDER BY column_1,column_2 DESC
+SELECT column_1,column_2 AS value
+FROM my_table
+WHERE (
+  column_1='some value' OR (
+    column_1='some other value' AND
+    NOT column_2 LIKE 'blabla %'
+  )
+)
+ORDER BY column_1,column_2 DESC
 ```

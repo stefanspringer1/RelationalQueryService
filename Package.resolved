@@ -1,5 +1,5 @@
 {
-  "originHash" : "c6842fde08ae8efc90643eb60ac1333faaafb2f4c2538ee396e2250d2bea475a",
+  "originHash" : "555227d189ea2ee6ef2814dc313d6b45fc48b83ff5e3752df9b859cafb7f0f88",
   "pins" : [
     {
       "identity" : "async-http-client",
@@ -42,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/stefanspringer1/RelationalQuery.git",
       "state" : {
-        "revision" : "f45ba80a6d3e231a0fed8a37687a69f6007fd62c",
-        "version" : "1.0.0"
+        "revision" : "b01322f4a0eefbe66538d35dad55b84f4ab8eba7",
+        "version" : "1.0.2"
       }
     },
     {
