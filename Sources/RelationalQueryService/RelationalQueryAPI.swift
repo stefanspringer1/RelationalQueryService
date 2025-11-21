@@ -50,7 +50,7 @@ struct RelationalQueryAPI: APIProtocol {
             ))
         }
         
-        guard apiKey == queryInput.apiKey else {
+        guard apiKey == queryInput.parameters.apiKey else {
             return .ok(.init(body:
                 .json(._Error(Components.Schemas._Error(error: "Wrong API key!")))
             ))
@@ -58,9 +58,9 @@ struct RelationalQueryAPI: APIProtocol {
         
         if let allowedTables = environment.get("DB-TABLES"), !allowedTables.isEmpty,
            case let allowedTables = allowedTables.split(separator: ",", omittingEmptySubsequences: true).map({ String($0) }) {
-            guard allowedTables.contains(queryInput.table) else {
+            guard allowedTables.contains(queryInput.query.table) else {
                 return .ok(.init(body:
-                    .json(._Error(Components.Schemas._Error(error: "Table \"\(queryInput.table)\" not allowed!")))
+                    .json(._Error(Components.Schemas._Error(error: "Table \"\(queryInput.query.table)\" not allowed!")))
                 ))
             }
         }
@@ -103,9 +103,9 @@ struct RelationalQueryAPI: APIProtocol {
             case .not(let not):
                 return .not(condition: try makeConditon(from: not.not))
             case .and(let and):
-                return .and(conditions: try and.and.map(makeConditon))
+                return .and(conditions: try and.and.conditions.map(makeConditon))
             case .or(let or):
-                return .or(conditions: try or.or.map(makeConditon))
+                return .or(conditions: try or.or.conditions.map(makeConditon))
             }
         }
         
@@ -117,8 +117,8 @@ struct RelationalQueryAPI: APIProtocol {
         let query: RelationalQuery
         do {
             query = RelationalQuery(
-                table: queryInput.table,
-                fields: queryInput.fields?.map { field in
+                table: queryInput.query.table,
+                fields: queryInput.query.fields?.map { field in
                     switch field {
                     case .field(let field):
                         RelationalField.field(name: field.name)
@@ -126,8 +126,8 @@ struct RelationalQueryAPI: APIProtocol {
                         RelationalField.renamingField(name: renamingField.renaming, to: renamingField.to)
                     }
                 },
-                condition: try makeConditon(fromOptional: queryInput.condition),
-                orderBy: queryInput.order?.map { order in
+                condition: try makeConditon(fromOptional: queryInput.query.condition),
+                orderBy: queryInput.query.order?.map { order in
                     switch order {
                     case .field(let field):
                             .field(name: field.name)

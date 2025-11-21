@@ -11,7 +11,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RelationalQuery'
+              $ref: '#/components/schemas/Input'
       responses:
         '200':
           description: The query result
@@ -48,11 +48,26 @@ components:
     Row:
       type: object
       additionalProperties: true
-    RelationalQuery:
+    Input:
+      type: object
+      properties:
+        parameters:
+          $ref: '#/components/schemas/Parameters'
+        query:
+          $ref: '#/components/schemas/RelationalQuery'
+      required:
+        - parameters
+        - query
+    Parameters:
       type: object
       properties:
         apiKey:
           type: string
+      required:
+        - apiKey
+    RelationalQuery:
+      type: object
+      properties:
         table:
           type: string
         fields:
@@ -216,17 +231,22 @@ components:
       type: object
       properties:
         and:
-          type: array
-          items:
-            $ref: '#/components/schemas/RelationalQueryCondition'
+          $ref: '#/components/schemas/Conditions'
       required:
         - and
     or:
       type: object
       properties:
         or:
+          $ref: '#/components/schemas/Conditions'
+      required:
+        - or
+    Conditions:
+      type: object
+      properties:
+        conditions:
           type: array
           items:
             $ref: '#/components/schemas/RelationalQueryCondition'
       required:
-        - or
+        - conditions
