@@ -21,6 +21,9 @@ struct ConnectionError: Error, CustomStringConvertible {
 
 struct RelationalQueryAPI: APIProtocol {
     
+    let postgresDatabaseMethods: PostgresDatabaseMethods
+    let parameters: Parameters
+    
     func query(_ input: RelationalQueryOpenAPI.Operations.query.Input) async throws -> RelationalQueryOpenAPI.Operations.query.Output {
         
         guard case .json(let queryInput) = input.body else {
@@ -29,22 +32,13 @@ struct RelationalQueryAPI: APIProtocol {
             ))
         }
         
-        let environment = Environment()
-        
-        guard let apiKey = environment.get("API-KEY"), !apiKey.isEmpty else {
-            return .ok(.init(body:
-                .json(._Error(Components.Schemas._Error(error: "Missing API key!")))
-            ))
-        }
-        
-        guard apiKey == queryInput.parameters.apiKey else {
+        guard queryInput.parameters.apiKey == parameters.apiKey else {
             return .ok(.init(body:
                 .json(._Error(Components.Schemas._Error(error: "Wrong API key!")))
             ))
         }
         
-        if let allowedTables = environment.get("DB-TABLES"), !allowedTables.isEmpty,
-           case let allowedTables = allowedTables.split(separator: ",", omittingEmptySubsequences: true).map({ String($0) }) {
+        if let allowedTables = parameters.allowedTables {
             guard allowedTables.contains(queryInput.query.table) else {
                 return .ok(.init(body:
                     .json(._Error(Components.Schemas._Error(error: "Table \"\(queryInput.query.table)\" not allowed!")))
@@ -52,11 +46,9 @@ struct RelationalQueryAPI: APIProtocol {
             }
         }
         
-        let maxConditionCount = Int(environment.get("DB-CONDITIONS") ?? "")
-        
         let query: RelationalQuery
         do {
-            query = try makeQuery(fromInputQuery: queryInput.query, maxConditions: maxConditionCount)
+            query = try makeQuery(fromInputQuery: queryInput.query, maxConditions: parameters.maxConditions)
         } catch {
             return .ok(.init(body:
                 .json(._Error(Components.Schemas._Error(error: "Error while constructing query object: \(String(describing: error))")))
@@ -67,41 +59,12 @@ struct RelationalQueryAPI: APIProtocol {
         
         var results = [String]()
         
-        func connect() async throws -> (PostgresClient,Task<(), Never>) {
-            guard
-                let dbHost = environment.get("DB-HOST"),
-                let dbPort = Int(environment.get("DB-PORT") ?? ""),
-                let dbUser = environment.get("DB-USER"),
-                let dbPassword = environment.get("DB-PASSWORD"),
-                let dbDatabase = environment.get("DB-DATABASE") else {
-                    throw ConnectionError("Missing database configuration!")
-                }
-            
-            let postgresClient = PostgresClient(
-                configuration: .init(
-                    host: dbHost,
-                    port: dbPort,
-                    username: dbUser,
-                    password: dbPassword,
-                    database: dbDatabase,
-                    tls: .disable
-                )
-            )
-            let task = Task {
-                await postgresClient.run()
-            }
-            return (postgresClient,task)
-        }
-        
-        let postgreSQLQuery = PostgresQuery(stringLiteral: sql)
         let rows: PostgresRowSequence
         do {
-            let (postgresClient,task) = try await connect()
-            rows = try await postgresClient.query(postgreSQLQuery)
-            task.cancel()
+            rows = try await postgresDatabaseMethods.query(sql: sql)
         } catch {
             return .ok(.init(body:
-                .json(._Error(Components.Schemas._Error(error: String(reflecting: error))))
+                .json(._Error(Components.Schemas._Error(error: "Could not excute query on database: \(String(reflecting: error))")))
             ))
         }
         

@@ -4,8 +4,6 @@ import OpenAPIHummingbird
 import OpenAPIRuntime
 import PostgresNIO
 
-
-
 @main struct RelationalQueryService: AsyncParsableCommand {
     
     @Option(name: [.long], help: #"The API key."#)
@@ -43,7 +41,27 @@ import PostgresNIO
         let router = Router()
         router.middlewares.add(LogRequestsMiddleware(.info))
         
-        let api = RelationalQueryAPI()
+        let postgresClient = PostgresClient(
+            configuration: .init(
+                host: dbHost,
+                port: dbPort,
+                username: dbUser,
+                password: dbPassword,
+                database: dbDatabase,
+                tls: .disable
+            )
+        )
+        
+        let postgresDatabaseMethods = PostgresDatabaseMethods(client: postgresClient)
+        
+        let api = RelationalQueryAPI(
+            postgresDatabaseMethods: postgresDatabaseMethods,
+            parameters: Parameters(
+                apiKey: apiKey,
+                allowedTables: allowedTables?.split(separator: ",", omittingEmptySubsequences: true).map{ String($0) },
+                maxConditions: maxConditions
+            )
+        )
         
         try api.registerHandlers(on: router)
         
@@ -52,18 +70,14 @@ import PostgresNIO
             configuration: .init(address: .hostname(hostname, port: port))
         )
         
-        app.addServices()
-        
-        var environment = Environment()
-        environment.set("API-KEY", value: apiKey)
-        environment.set("DB-HOST", value: dbHost)
-        environment.set("DB-PORT", value: String(dbPort))
-        environment.set("DB-USER", value: dbUser)
-        environment.set("DB-PASSWORD", value: dbPassword)
-        environment.set("DB-DATABASE", value: dbDatabase)
-        environment.set("DB-CONDITIONS", value: String(maxConditions ?? -1))
-        environment.set("DB-TABLES", value: allowedTables ?? "")
+        app.addServices(postgresDatabaseMethods.client)
         
         try await app.runService()
     }
+}
+
+struct Parameters {
+    let apiKey: String
+    let allowedTables: [String]?
+    let maxConditions: Int?
 }
