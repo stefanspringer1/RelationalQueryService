@@ -197,6 +197,8 @@ struct RelationalQueryAPI: APIProtocol {
                     cells[cell.columnName] = try cell.decode(String.self)
                 case .bool:
                     cells[cell.columnName] = try cell.decode(Bool.self)
+                case .int2, .int4, .int8:
+                    cells[cell.columnName] = try cell.decode(Int.self)
                 default:
                     return .ok(.init(body:
                         .json(._Error(Components.Schemas._Error(error: "Unhandled data type: \(cell.dataType)")))
