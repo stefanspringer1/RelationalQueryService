@@ -51,6 +51,8 @@ components:
     RelationalQuery:
       type: object
       properties:
+        apiKey:
+          type: string
         table:
           type: string
         fields:
@@ -64,6 +66,7 @@ components:
           items:
             $ref: '#/components/schemas/RelationalQueryResultOrder'
       required:
+        - apiKey
         - table
     RelationalField:
       type: object

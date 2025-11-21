@@ -43,6 +43,28 @@ struct RelationalQueryAPI: APIProtocol {
         }
         
         let environment = Environment()
+        
+        guard let apiKey = environment.get("API-KEY"), !apiKey.isEmpty else {
+            return .ok(.init(body:
+                .json(._Error(Components.Schemas._Error(error: "Missing API key!")))
+            ))
+        }
+        
+        guard apiKey == queryInput.apiKey else {
+            return .ok(.init(body:
+                .json(._Error(Components.Schemas._Error(error: "Wrong API key!")))
+            ))
+        }
+        
+        if let allowedTables = environment.get("DB-TABLES"), !allowedTables.isEmpty,
+           case let allowedTables = allowedTables.split(separator: ",", omittingEmptySubsequences: true).map({ String($0) }) {
+            guard allowedTables.contains(queryInput.table) else {
+                return .ok(.init(body:
+                    .json(._Error(Components.Schemas._Error(error: "Table \"\(queryInput.table)\" not allowed!")))
+                ))
+            }
+        }
+        
         let maxConditionCount = Int(environment.get("DB-CONDITIONS") ?? "") ?? -1
         var conditionCount = 0
         

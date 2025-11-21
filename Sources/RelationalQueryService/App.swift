@@ -8,6 +8,9 @@ import PostgresNIO
 
 @main struct RelationalQueryService: AsyncParsableCommand {
     
+    @Option(name: [.long], help: #"The API key."#)
+    var apiKey: String
+    
     @Option(name: [.long], help: #"The host name."#)
     var hostname: String = "127.0.0.1"
     
@@ -29,8 +32,11 @@ import PostgresNIO
     @Option(name: [.long], help: #"The database name."#)
     var dbDatabase: String
     
+    @Option(name: [.long], help: #"Optional: A comma-separated list of allowed table names."#)
+    var allowedTables: String? = nil
+    
     @Option(name: [.long], help: #"Optional: Maximal number of conditions."#)
-    var dbConditions: Int? = nil
+    var maxConditions: Int? = nil
     
     func run() async throws {
         
@@ -49,12 +55,14 @@ import PostgresNIO
         app.addServices()
         
         var environment = Environment()
+        environment.set("API-KEY", value: apiKey)
         environment.set("DB-HOST", value: dbHost)
         environment.set("DB-PORT", value: String(dbPort))
         environment.set("DB-USER", value: dbUser)
         environment.set("DB-PASSWORD", value: dbPassword)
         environment.set("DB-DATABASE", value: dbDatabase)
-        environment.set("DB-CONDITIONS", value: String(dbConditions ?? -1))
+        environment.set("DB-CONDITIONS", value: String(maxConditions ?? -1))
+        environment.set("DB-TABLES", value: allowedTables ?? "")
         
         try await app.runService()
     }
