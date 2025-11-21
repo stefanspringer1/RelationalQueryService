@@ -145,19 +145,24 @@ struct RelationalQueryAPI: APIProtocol {
                 table: queryInput.query.table,
                 fields: queryInput.query.fields?.map { field in
                     switch field {
-                    case .field(let field):
-                        RelationalField.field(name: field.name)
-                    case .renamingField(let renamingField):
-                        RelationalField.renamingField(name: renamingField.renaming, to: renamingField.to)
+                    case .Field(let content):
+                        RelationalField.field(name: content.field.name)
+                    case .RenamingField(let content):
+                        RelationalField.renamingField(name: content.renamingField.name, to: content.renamingField.to)
                     }
                 },
                 condition: try makeConditon(fromOptional: queryInput.query.condition),
                 orderBy: queryInput.query.order?.map { order in
                     switch order {
-                    case .field(let field):
-                            .field(name: field.name)
-                    case .fieldWithDirection(let fieldWithDirection):
-                            .fieldWithDirection(name: fieldWithDirection.withDirection, direction: fieldWithDirection.direction == .descending ? .descending : .ascending)
+                    case .Field(let content):
+                            .field(
+                                name: content.field.name
+                            )
+                    case .FieldWithDirection(let content):
+                            .fieldWithDirection(
+                                name: content.fieldWithDirection.name,
+                                direction: content.fieldWithDirection.direction == .descending ? .descending : .ascending
+                            )
                         
                     }
                 }

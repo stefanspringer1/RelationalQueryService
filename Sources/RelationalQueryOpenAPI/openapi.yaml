@@ -86,8 +86,8 @@ components:
     RelationalField:
       type: object
       oneOf:
-        - $ref: '#/components/schemas/field'
-        - $ref: '#/components/schemas/renamingField'
+        - $ref: '#/components/schemas/Field'
+        - $ref: '#/components/schemas/RenamingField'
     RelationalQueryCondition:
       type: object
       oneOf:
@@ -105,11 +105,18 @@ components:
     RelationalQueryResultOrder:
       type: object
       oneOf:
-        - $ref: '#/components/schemas/field'
-        - $ref: '#/components/schemas/fieldWithDirection'
+        - $ref: '#/components/schemas/Field'
+        - $ref: '#/components/schemas/FieldWithDirection'
     RelationalQueryOrderDirection:
       type: string
       enum: [ascending, descending]
+    Field:
+      type: object
+      properties:
+        field:
+          $ref: '#/components/schemas/field'
+      required:
+        - field
     field:
       type: object
       properties:
@@ -117,25 +124,39 @@ components:
           type: string
       required:
         - name
+    RenamingField:
+      type: object
+      properties:
+        renamingField:
+          $ref: '#/components/schemas/renamingField'
+      required:
+        - renamingField
     renamingField:
       type: object
       properties:
-        renaming:
+        name:
           type: string
         to:
           type: string
       required:
-        - renaming
+        - name
         - to
+    FieldWithDirection:
+      type: object
+      properties:
+        fieldWithDirection:
+          $ref: '#/components/schemas/fieldWithDirection'
+      required:
+        - fieldWithDirection
     fieldWithDirection:
       type: object
       properties:
-        withDirection:
+        name:
           type: string
         direction:
           $ref: '#/components/schemas/RelationalQueryOrderDirection'
       required:
-        - withDirection
+        - name
         - direction
     EqualText:
       type: object

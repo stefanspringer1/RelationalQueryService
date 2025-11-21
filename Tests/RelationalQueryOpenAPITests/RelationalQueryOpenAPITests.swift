@@ -11,8 +11,12 @@ import RelationalQueryOpenAPI
             query: Components.Schemas.RelationalQuery(
                 table: "my_table",
                 fields: [
-                    Components.Schemas.RelationalField.field(.init(name: "column_1")),
-                    Components.Schemas.RelationalField.renamingField(.init(renaming: "column_2", to: "value"))
+                    Components.Schemas.RelationalField.Field(.init(
+                        field: Components.Schemas.field(name: "column_1")
+                    )),
+                    Components.Schemas.RelationalField.RenamingField(.init(
+                        renamingField: Components.Schemas.renamingField(name: "column_2", to: "value")
+                    ))
                 ],
                 condition: Components.Schemas.RelationalQueryCondition.or(.init(
                     or: Components.Schemas.Conditions(conditions: [
@@ -44,8 +48,12 @@ import RelationalQueryOpenAPI
                     ])
                 )),
                 order: [
-                    Components.Schemas.RelationalQueryResultOrder.field(Components.Schemas.field(name: "column_1")),
-                    Components.Schemas.RelationalQueryResultOrder.fieldWithDirection(Components.Schemas.fieldWithDirection(withDirection: "column_2", direction: .descending))
+                    Components.Schemas.RelationalQueryResultOrder.Field(.init(
+                        field: Components.Schemas.field(name: "column_1")
+                    )),
+                    Components.Schemas.RelationalQueryResultOrder.FieldWithDirection(.init(
+                        fieldWithDirection: Components.Schemas.fieldWithDirection(name: "column_2", direction: .descending)
+                    ))
                 ]
             )
         )
