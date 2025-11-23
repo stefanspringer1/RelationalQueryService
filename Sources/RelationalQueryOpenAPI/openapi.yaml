@@ -36,12 +36,14 @@ components:
         required:
           - sql
           - rows
+        additionalProperties: false
     SQL:
       properties:
         sql:
           type: string
       required:
         - sql
+      additionalProperties: false
     Error:
       type: object
       properties:
@@ -49,6 +51,7 @@ components:
           type: string
       required:
         - error
+      additionalProperties: false
     Rows:
       type: object
       properties:
@@ -56,6 +59,7 @@ components:
           $ref: '#/components/schemas/RowArray'
       required:
         - rows
+      additionalProperties: false
     RowArray:
       type: array
       items:
@@ -73,6 +77,7 @@ components:
       required:
         - parameters
         - query
+      additionalProperties: false
     Parameters:
       type: object
       properties:
@@ -80,6 +85,7 @@ components:
           type: string
       required:
         - apiKey
+      additionalProperties: false
     RelationalQuery:
       type: object
       properties:
@@ -98,6 +104,7 @@ components:
       required:
         - apiKey
         - table
+      additionalProperties: false
     RelationalField:
       type: object
       oneOf:
@@ -132,6 +139,7 @@ components:
           $ref: '#/components/schemas/field'
       required:
         - field
+      additionalProperties: false
     field:
       type: object
       properties:
@@ -139,6 +147,7 @@ components:
           type: string
       required:
         - name
+      additionalProperties: false
     RenamingField:
       type: object
       properties:
@@ -146,6 +155,7 @@ components:
           $ref: '#/components/schemas/renamingField'
       required:
         - renamingField
+      additionalProperties: false
     renamingField:
       type: object
       properties:
@@ -156,6 +166,7 @@ components:
       required:
         - name
         - to
+      additionalProperties: false
     FieldWithDirection:
       type: object
       properties:
@@ -163,6 +174,7 @@ components:
           $ref: '#/components/schemas/fieldWithDirection'
       required:
         - fieldWithDirection
+      additionalProperties: false
     fieldWithDirection:
       type: object
       properties:
@@ -173,6 +185,7 @@ components:
       required:
         - name
         - direction
+      additionalProperties: false
     EqualText:
       type: object
       properties:
@@ -180,6 +193,7 @@ components:
           $ref: '#/components/schemas/equalText'
       required:
         - equalText
+      additionalProperties: false
     equalText:
       type: object
       properties:
@@ -190,6 +204,7 @@ components:
       required:
         - field
         - value
+      additionalProperties: false
     EqualInteger:
       type: object
       properties:
@@ -197,6 +212,7 @@ components:
           $ref: '#/components/schemas/equalInteger'
       required:
         - equalInteger
+      additionalProperties: false
     equalInteger:
       type: object
       properties:
@@ -207,6 +223,7 @@ components:
       required:
         - field
         - value
+      additionalProperties: false
     SmallerInteger:
       type: object
       properties:
@@ -214,6 +231,7 @@ components:
           $ref: '#/components/schemas/smallerInteger'
       required:
         - smallerInteger
+      additionalProperties: false
     smallerInteger:
       type: object
       properties:
@@ -224,6 +242,7 @@ components:
       required:
         - field
         - than
+      additionalProperties: false
     SmallerOrEqualInteger:
       type: object
       properties:
@@ -231,6 +250,7 @@ components:
           $ref: '#/components/schemas/smallerOrEqualInteger'
       required:
         - smallerOrEqualInteger
+      additionalProperties: false
     smallerOrEqualInteger:
       type: object
       properties:
@@ -241,6 +261,7 @@ components:
       required:
         - field
         - than
+      additionalProperties: false
     GreaterInteger:
       type: object
       properties:
@@ -248,6 +269,7 @@ components:
           $ref: '#/components/schemas/greaterInteger'
       required:
         - greaterInteger
+      additionalProperties: false
     greaterInteger:
       type: object
       properties:
@@ -258,6 +280,7 @@ components:
       required:
         - field
         - than
+      additionalProperties: false
     GreaterOrEqualInteger:
       type: object
       properties:
@@ -265,6 +288,7 @@ components:
           $ref: '#/components/schemas/greaterOrEqualInteger'
       required:
         - greaterOrEqualInteger
+      additionalProperties: false
     greaterOrEqualInteger:
       type: object
       properties:
@@ -275,6 +299,7 @@ components:
       required:
         - field
         - than
+      additionalProperties: false
     EqualBoolean:
       type: object
       properties:
@@ -282,6 +307,7 @@ components:
           $ref: '#/components/schemas/equalBoolean'
       required:
         - equalBoolean
+      additionalProperties: false
     equalBoolean:
       type: object
       properties:
@@ -292,6 +318,7 @@ components:
       required:
         - field
         - value
+      additionalProperties: false
     SimilarText:
       type: object
       properties:
@@ -299,6 +326,7 @@ components:
           $ref: '#/components/schemas/similarText'
       required:
         - similarText
+      additionalProperties: false
     similarText:
       type: object
       properties:
@@ -312,6 +340,7 @@ components:
         - field
         - template
         - wildcard
+      additionalProperties: false
     Not:
       type: object
       properties:
@@ -319,6 +348,7 @@ components:
           $ref: '#/components/schemas/not'
       required:
         - not
+      additionalProperties: false
     not:
       type: object
       properties:
@@ -326,6 +356,7 @@ components:
           $ref: '#/components/schemas/RelationalQueryCondition'
       required:
         - condition
+      additionalProperties: false
     and:
       type: object
       properties:
@@ -333,6 +364,7 @@ components:
           $ref: '#/components/schemas/Conditions'
       required:
         - and
+      additionalProperties: false
     or:
       type: object
       properties:
@@ -340,6 +372,7 @@ components:
           $ref: '#/components/schemas/Conditions'
       required:
         - or
+      additionalProperties: false
     Conditions:
       type: object
       properties:
@@ -349,3 +382,4 @@ components:
             $ref: '#/components/schemas/RelationalQueryCondition'
       required:
         - conditions
+      additionalProperties: false
