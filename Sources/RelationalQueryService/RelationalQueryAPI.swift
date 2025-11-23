@@ -66,7 +66,7 @@ struct RelationalQueryAPI: APIProtocol {
             let unauthorizedFields = fields.filter({ !allowedFields.contains($0.name) })
             guard unauthorizedFields.isEmpty else {
                 return .ok(.init(body:
-                        .json(._Error(Components.Schemas._Error(error: "Fields \(unauthorizedFields.map{ "\"\($0)\"" }.joined(separator: ", ")) not allowed!")))
+                        .json(._Error(Components.Schemas._Error(error: "Fields \(unauthorizedFields.map{ "\"\($0.name)\"" }.joined(separator: ", ")) not allowed!")))
                 ))
             }
         }
