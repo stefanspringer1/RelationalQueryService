@@ -124,8 +124,12 @@ struct RelationalQueryAPI: APIProtocol {
         }
         
         return .ok(.init(body:
-            .json(.Rows(Components.Schemas.Rows(rows: resultRows)))
+            .json(.QueryResult(Components.Schemas.QueryResult(
+                sql: Components.Schemas.SQL(sql: sql),
+                rows: Components.Schemas.Rows(rows: resultRows)
+            )))
         ))
+        
     }
     
 }

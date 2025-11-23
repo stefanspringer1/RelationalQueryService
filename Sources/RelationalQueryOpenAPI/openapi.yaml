@@ -26,7 +26,22 @@ components:
       type: object
       oneOf:
         - $ref: '#/components/schemas/Error'
-        - $ref: '#/components/schemas/Rows'
+        - $ref: '#/components/schemas/QueryResult'
+    QueryResult:
+        properties:
+          sql:
+            $ref: '#/components/schemas/SQL'
+          rows:
+            $ref: '#/components/schemas/Rows'
+        required:
+          - sql
+          - rows
+    SQL:
+      properties:
+        sql:
+          type: string
+      required:
+        - sql
     Error:
       type: object
       properties:
