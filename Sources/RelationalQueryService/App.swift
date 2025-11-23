@@ -33,6 +33,9 @@ import PostgresNIO
     @Option(name: [.long], help: #"Optional: A comma-separated list of allowed table names."#)
     var allowedTables: String? = nil
     
+    @Option(name: [.long], help: #"Optional: A comma-separated list of allowed field names."#)
+    var allowedFields: String? = nil
+    
     @Option(name: [.long], help: #"Optional: Maximal number of conditions."#)
     var maxConditions: Int? = nil
     
@@ -59,6 +62,7 @@ import PostgresNIO
             parameters: Parameters(
                 apiKey: apiKey,
                 allowedTables: allowedTables?.split(separator: ",", omittingEmptySubsequences: true).map{ String($0) },
+                allowedFields: allowedFields?.split(separator: ",", omittingEmptySubsequences: true).map{ String($0) },
                 maxConditions: maxConditions
             )
         )
@@ -79,5 +83,6 @@ import PostgresNIO
 struct Parameters {
     let apiKey: String
     let allowedTables: [String]?
+    let allowedFields: [String]?
     let maxConditions: Int?
 }

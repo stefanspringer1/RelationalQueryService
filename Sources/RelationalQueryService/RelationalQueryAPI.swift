@@ -19,6 +19,17 @@ struct ConnectionError: Error, CustomStringConvertible {
     
 }
 
+extension Components.Schemas.RelationalField {
+    var name: String {
+        switch self {
+        case .Field(let content):
+            content.field.name
+        case .RenamingField(let content):
+            content.renamingField.name
+        }
+    }
+}
+
 struct RelationalQueryAPI: APIProtocol {
     
     let postgresDatabaseMethods: PostgresDatabaseMethods
@@ -42,6 +53,20 @@ struct RelationalQueryAPI: APIProtocol {
             guard allowedTables.contains(queryInput.query.table) else {
                 return .ok(.init(body:
                     .json(._Error(Components.Schemas._Error(error: "Table \"\(queryInput.query.table)\" not allowed!")))
+                ))
+            }
+        }
+        
+        if let allowedFields = parameters.allowedFields {
+            guard let fields = queryInput.query.fields else {
+                return .ok(.init(body:
+                        .json(._Error(Components.Schemas._Error(error: "Since only certain fields are allowed, the fields must be explicitely listed in the query!")))
+                ))
+            }
+            let unauthorizedFields = fields.filter({ !allowedFields.contains($0.name) })
+            guard unauthorizedFields.isEmpty else {
+                return .ok(.init(body:
+                        .json(._Error(Components.Schemas._Error(error: "Fields \(unauthorizedFields.map{ "\"\($0)\"" }.joined(separator: ", ")) not allowed!")))
                 ))
             }
         }
