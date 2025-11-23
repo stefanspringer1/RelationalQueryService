@@ -30,20 +30,13 @@ components:
     QueryResult:
         properties:
           sql:
-            $ref: '#/components/schemas/SQL'
+            type: string
           rows:
             $ref: '#/components/schemas/Rows'
         required:
           - sql
           - rows
         additionalProperties: false
-    SQL:
-      properties:
-        sql:
-          type: string
-      required:
-        - sql
-      additionalProperties: false
     Error:
       type: object
       properties:
@@ -53,14 +46,6 @@ components:
         - error
       additionalProperties: false
     Rows:
-      type: object
-      properties:
-        rows:
-          $ref: '#/components/schemas/RowArray'
-      required:
-        - rows
-      additionalProperties: false
-    RowArray:
       type: array
       items:
         $ref: '#/components/schemas/Row'
