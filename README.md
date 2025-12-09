@@ -1,6 +1,6 @@
 # RelationalQueryService
 
-Connect the [RelationalQuery](https://github.com/stefanspringer1/RelationalQuery) format to an SQL database using an OpenAPI defintion.
+Connect the [RelationalQuery](https://github.com/stefanspringer1/RelationalQuery) format to a PostgreSQL database using an OpenAPI defintion.
 
 The application needs to be started with an API key, optionally the allowed table names, the allowed field names, or the maximal number of conditions in a query can be specified.
 
@@ -13,7 +13,7 @@ Example input (cf. `reverseInputTest` in the tests)):
 ```json
 {
   "parameters" : {
-    "apiKey" : "sieben"
+    "apiKey" : "myKey"
   },
   "query" : {
     "condition" : {
