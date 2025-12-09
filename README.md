@@ -1,6 +1,18 @@
 # RelationalQueryService
 
-Connect the [RelationalQuery](https://github.com/stefanspringer1/RelationalQuery) format to a PostgreSQL database using an OpenAPI defintion.
+---
+
+⚠️ **NOTE:**
+
+This repository is deprecated; use the following, currently maintained repository instead:
+
+https://github.com/struktaris/RelationalQueryService
+
+Note the new version number: The last version of this repository corresponds to version 1.0.0 of the new repository.
+
+---
+
+Connect the [RelationalQuery](https://github.com/stefanspringer1/RelationalQuery) format to a PostgreSQL database using an OpenAPI definition.
 
 The application needs to be started with an API key, optionally the allowed table names, the allowed field names, or the maximal number of conditions in a query can be specified.
 

@@ -30,6 +30,7 @@ extension Components.Schemas.RelationalField {
     }
 }
 
+@available(*, deprecated, message: "this package is deprecated, use the repository https://github.com/struktaris/RelationalQueryService instead and note the version number being set to 1.0.0")
 struct RelationalQueryAPI: APIProtocol {
     
     let postgresDatabaseMethods: PostgresDatabaseMethods
